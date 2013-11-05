@@ -10,34 +10,6 @@ public class AFN_E {
 	public AFN_E(){
 		this.actual = null;
 		this.automata = new Vector<State>();
-		
-		/*
-		this.automata = new Vector<State>();
-		
-		Hashtable<String, Vector<String>> htmp = new Hashtable<String, Vector<String>>();
-		Vector<String> estados = new Vector<String>();
-		estados.add("q1");
-		htmp.put("a", estados);
-		State tmp = new State("q0", htmp, false);
-		this.automata.add(tmp);
-		
-		htmp = new Hashtable<String, Vector<String>>();
-		estados = new Vector<String>();
-		estados.add("q1");
-		htmp.put("a", estados);
-		estados = new Vector<String>();
-		estados.add("q2");
-		estados.add("q0");
-		htmp.put("b", estados);
-		tmp = new State("q1", htmp, false);
-		this.automata.add(tmp);
-		
-		tmp = new State("q2", new Hashtable<String, Vector<String>>(), true);
-		this.automata.add(tmp);
-		
-		this.actual = automata.firstElement();	
-		*/
-		
 	}
 	
 	public void addState(String nombre, Hashtable<String, Vector<String>> transiciones, boolean esFinal){
@@ -57,8 +29,6 @@ public class AFN_E {
 			//Se obtiene el nombre del siguiente estado de acuerdo al caracter de entrada
 			estado =  this.actual.getTransiciones().get(String.valueOf(cadena.charAt(i)));
 			if(estado == null) return false;
-			System.out.println(this.actual.getEstado());
-			System.out.println(cadena.charAt(0));
 			int tmp = 0;
 			for(int j = 0; j < automata.size(); j++){
 				if(tmp < estado.size() && estado.elementAt(tmp).compareTo(automata.elementAt(j).getEstado()) == 0){
@@ -84,7 +54,7 @@ public class AFN_E {
 			this.automata.add(af.automata.firstElement());
 			af.automata.remove(0);
 		}
-		System.out.println("Estoy concatenando");
+		
 		this.imprimeAutomata();
 	}
 	
@@ -114,8 +84,6 @@ public class AFN_E {
 		//Se agrega un nuevo estado final
 		this.automata.add(new State(String.valueOf(n+2), new Hashtable<String, Vector<String>>(), true));
 		
-		
-		this.imprimeAutomata();
 	}
 	
 	public void estrella(){
@@ -135,7 +103,6 @@ public class AFN_E {
 		this.automata.add(new State(String.valueOf(n+2), new Hashtable<String, Vector<String>>(), true));
 		//Se agrega la transicion del nuevo estao inicial al nueo final
 		this.automata.firstElement().addTransiciones("ε", this.automata.lastElement().getEstado());
-		this.imprimeAutomata();
 	}
 	
 	public void positiva(){
@@ -147,7 +114,6 @@ public class AFN_E {
 		
 		this.automata.add(new State(String.valueOf(n+1), new Hashtable<String, Vector<String>>(), true));
 		
-		this.imprimeAutomata();	
 	}
 	
 	public void imprimeAutomata(){
@@ -163,6 +129,10 @@ public class AFN_E {
 			System.out.println();
 			
 		}
+	}
+	
+	public Vector<State> getAutomata(){
+		return this.automata;
 	}
 
 	public static void main(String[] args) {
