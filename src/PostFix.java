@@ -82,13 +82,13 @@ public class PostFix {
 					this.stack.push(symbol);
 				}	
 			}
-			else if(Character.isLetter(symbol) || symbol == '\n' || symbol == ' ' || Character.isDigit(symbol) || symbol == '.' || symbol == '+'|| symbol == '*'){ 
+			else if(Character.isAlphabetic(symbol) || symbol == '\n' || symbol == ' ' || Character.isDigit(symbol) || symbol == '.' || symbol == '+'|| symbol == '*'){ 
 				postFix = postFix + symbol;
 			}
 		}
 		while(!this.stack.isEmpty()){
 			if(this.stack.peek() == '('){
-				return "No se encontr�� el par��ntesis que cierra";
+				return "No se encontró el paréntesis que cierra";
 			}
 			postFix = postFix + stack.pop();
 		}
@@ -99,9 +99,7 @@ public class PostFix {
 	public static void main(String[] args) {
 		
 		PostFix convertir = new PostFix("(padre,ε)(.)+www(.)+com");
-		//PostFix convertir = new PostFix("(padre,ε)");
 		System.out.println(convertir.getResult());
-		ERenAFN a = new ERenAFN(convertir.getResult());
 
 	}
 
