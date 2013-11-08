@@ -1,53 +1,66 @@
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Stack;
 import java.util.Vector;
 
 public class ERaAFN {
 
 	private final String[] operadores = {"*", "+", "#", ","};
-	private final String[] alfabeto = {" ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+	private final String[] alfabeto = {" ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "á", "é", "í", "ó", "ú", "Á", "É", "Í", "Ó", "Ú", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}    ;
 	private AFN_E automata;
 	private int numEstados = 0;
 	
 	public ERaAFN(String ER){
 		automata = new AFN_E();
 		AFN_E tmp = new AFN_E();
+		Stack<AFN_E> a = new Stack<AFN_E>();
 		this.automata = crearAutomata(String.valueOf(ER.charAt(0)));
+		a.add(this.automata);
+		
 		for(int i = 1; i < ER.length(); i++){
-			
 			if(ER.charAt(i) == '*'){
-				this.automata.estrella();
+				a.peek().estrella();
+				//this.automata.estrella();
 				this.numEstados += 2;
 			}
 			else if(ER.charAt(i) == '+'){
-				this.automata.positiva();
+				a.peek().positiva();
+				//this.automata.positiva();
 				this.numEstados++;
 			}
 			else if(ER.charAt(i) == '#'){//Concatena
 				//tmp.imprimeAutomata();
-				this.automata.concatenacion(tmp);
+				tmp = a.pop();
+				a.peek().concatenacion(tmp);
+				//this.automata.concatenacion(tmp);
 				tmp = new AFN_E();
 			}
 			else if(ER.charAt(i) == ','){//Union
-				this.automata.union(tmp);
+				tmp = a.pop();
+				a.peek().union(tmp);
+				//this.automata.union(tmp);
 				tmp = new AFN_E();
 				this.numEstados += 2;
 			}
 			else if(ER.charAt(i) == '.'){//Caso especial de caracteres de entreda (varios que pueden ser aleatorios)
-				tmp = crearAutomataPunto();
+				a.push(crearAutomataPunto());
+				//tmp = crearAutomataPunto();
 				this.numEstados++;
 				if(ER.charAt(i+1) == '+'){
-					tmp.positiva();
+					a.peek().positiva();
+					//tmp.positiva();
 					i+=1;
 					
 				}
 			}
 			else if(ER.charAt(i) == 'ε'){
-				tmp = crearAutomataE();
+				a.push(crearAutomata(String.valueOf(ER.charAt(i))));
+				//tmp = crearAutomataE();
 			}
 			else{
-				tmp = crearAutomata(String.valueOf(ER.charAt(i)));
+				a.push(crearAutomata(String.valueOf(ER.charAt(i))));
+				//tmp = crearAutomata(String.valueOf(ER.charAt(i)));
 			}
 		}
 		this.automata.imprimeAutomata();
@@ -123,26 +136,24 @@ public class ERaAFN {
 			String newState = ""; //Crear nombre de nuevo estado
 			actual=new Vector<String>();
 			actual = estadosNuevoAutomata.get(contadorEstadoActual);
+			transClausurasHash = new Hashtable<String,Vector<String>>(); //HashTable para el nuevo estado
 			int size = actual.size();
 			for(int a=0;a<size;a++){
 				String estado=actual.get(a);
 				newState += estado + ","; //Concatena nombre del nuevo estado
 				Hashtable<String,Vector<String>> trans = estados.get(Integer.parseInt(estado)).getTransiciones();//Obtiene las transiciones del estado revisado
 				boolean esFinal=false;
-				
+				//System.out.println(newState);
 				Enumeration<String> key = trans.keys(); //Obtiene los caracteres a los que va el estado revisado
-				Enumeration<Vector<String>> transiciones = trans.elements();
-				Vector<String> newTransitions=new Vector<String>(); //Nuevas transiciones que tendra el nuevo estado
-				transClausurasHash=transClausurasHash = new Hashtable<String,Vector<String>>(); //HashTable para el nuevo estado
+				
 				while(key.hasMoreElements()){ //Recorre todos los caracteres a los que va el estado revisado
 					String caracter = key.nextElement();
-					System.out.println("Caracter "+caracter + " Transiciones: "+transiciones.nextElement());
-					//if(caracter!="ε"){ //Si el caracter actual es diferente de epsilon, procede a obtener sus clausuras de epsilon
+					if(caracter!="ε"){ //Si el caracter actual es diferente de epsilon, procede a obtener sus clausuras de epsilon
 						Vector<String> transClausuras = trans.get(caracter); //Obtiene las transiciones de ese caracter
-						
+						Vector<String> newTransitions=new Vector<String>(); //Nuevas transiciones que tendra el nuevo estado
 						for (int i=0;i<transClausuras.size();i++){
 							Vector<String> sacaClausuras = clausuras.get(transClausuras.get(i)); //Obtiene la clausura del estado
-							String estadoClausuras ="";
+							//String estadoClausuras ="";
 							for(int j=0;j<sacaClausuras.size();j++){
 								newTransitions.add(sacaClausuras.get(j)); //Agrega la clausura del estado al vector de las nuevas transiciones
 								//estadoClausuras+=sacaClausuras.get(j)+","; //Agrega la clausura del estado al vector de las nuevas transiciones
@@ -150,8 +161,22 @@ public class ERaAFN {
 							//newTransitions.add(estadoClausuras.substring(0, estadoClausuras.length()-1));
 						}
 						this.eliminaRepetidos(newTransitions);
+						
 						Collections.sort(newTransitions);
-						transClausurasHash.put(caracter, newTransitions);  //agrega las nuevas transiciones del caracter a la tabla hash que obtendra el nuevo estado
+						Vector<String> chequeoCaracterExistente = transClausurasHash.get(caracter);
+						if(chequeoCaracterExistente!=null){
+							System.out.println("Hay un caracter que ya existe en la tablaHash para "+caracter);
+							for(String estadoAgregarCaracter : newTransitions){
+								if(!chequeoCaracterExistente.contains(estadoAgregarCaracter)){
+									chequeoCaracterExistente.add(estadoAgregarCaracter);
+								}
+							}
+							newTransitions = transClausurasHash.get(caracter);
+							System.out.println("Caracter : "+caracter+" Nueva transicion: "+newTransitions);
+						}
+						else {
+							transClausurasHash.put(caracter, newTransitions);  //agrega las nuevas transiciones del caracter a la tabla hash que obtendra el nuevo estado
+						}
 						boolean agregable = true;
 						for(int k = 0; k<estadosNuevoAutomata.size();k++){
 							if(estadosNuevoAutomata.get(k).containsAll(newTransitions) && newTransitions.size()==estadosNuevoAutomata.get(k).size()){
@@ -163,20 +188,21 @@ public class ERaAFN {
 							contadorNuevosEstados++;
 						}
 						
-					//}
+					}
 				}
 				
 				
 			}
 			newState=newState.substring(0, newState.length()-1);
-			//System.out.println("Nuevo estado "+newState);
 			afn.addState(newState, transClausurasHash, false);
-			
-			afn.imprimeAutomata();
 			contadorEstadoActual++;		
 			
 		}
-		System.out.println(afn.runAFN("aa"));
+		State lol = afn.getAutomata().remove(afn.getAutomata().size()-1);
+		lol.setFinal(true);
+		afn.addState(lol);
+		afn.imprimeAutomata();
+		System.out.println(afn.runAFN("o"));
 		return afn;
 	}
 	
@@ -233,10 +259,10 @@ public class ERaAFN {
 	
 	
 	public static void main(String[] args) {
-		PostFix convertir = new PostFix("(padre(.)+www(.)+.com)+(www(.)+.com)");
+		PostFix convertir = new PostFix("(éi)*(tu,yo,mi)(óu)*");
 		System.out.println(convertir.getResult());
 		String exp = convertir.getResult();
-		ERaAFN a = new ERaAFN("pa#d#r#e#ε,.+#w#w#w#.+#c#o#m#");
+		ERaAFN a = new ERaAFN(exp);
 		//ERenAFN a = new ERenAFN("ab#.+#");
 		//a.crearAutomataPorPalabra("pa#d#r#e#ε,.+#w#w#w#.+#c#o#m#");
 		

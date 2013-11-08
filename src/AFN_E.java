@@ -22,31 +22,49 @@ public class AFN_E {
 			this.automata.add(new State(nombre, transiciones, esFinal));
 		}
 	}
+	public void addState(State estado){
+		this.automata.add(estado);
+	}
 	
 	public boolean runAFN(String cadena){
-		Vector<String> estado = new Vector<String>();
+		System.out.println(cadena);
+		//Vector<String> estado = new Vector<String>();
+		String estado;
 		for(int i = 0; i < cadena.length(); i++){
 			//Se obtiene el nombre del siguiente estado de acuerdo al caracter de entrada
-			estado =  this.actual.getTransiciones().get(String.valueOf(cadena.charAt(i)));
+			estado =  this.transicionAString(this.actual.getTransiciones().get(String.valueOf(cadena.charAt(i))));
+			//System.out.print("Caracter "+String.valueOf(cadena.charAt(i))+" va a "+estado);
 			if(estado == null) return false;
-			int tmp = 0;
 			for(int j = 0; j < automata.size(); j++){
-				if(tmp < estado.size() && estado.elementAt(tmp).compareTo(automata.elementAt(j).getEstado()) == 0){
+				if(estado.compareTo(automata.elementAt(j).getEstado()) == 0){
+					//System.out.println("Estado comparado a "+automata.elementAt(j).getEstado());
 					this.actual = this.automata.elementAt(j);
-					if(runAFN(cadena.substring(i+1)))
-						return true;
-					else{
-						tmp++;
-						j = 0;
-						i++;
-						this.actual = this.automata.elementAt(j);
+					if(i+1<cadena.length()){
+						if(runAFN(cadena.substring(i+1)))
+							return true;
+						else{
+							j = 0;
+							i++;
+							this.actual = this.automata.elementAt(j);
+						}
 					}
+					
 				}
 			}
 		}
 		return actual.getFinal();
 	}
-	
+	public String transicionAString(Vector<String> transicion){
+		String transicionString="";
+		if(transicion!=null){
+			for(String estado : transicion){
+				transicionString+=estado+",";
+			}
+			return transicionString.substring(0,transicionString.length()-1);
+		}
+		return null;
+
+	}
 	public void concatenacion(AFN_E af){
 		this.automata.lastElement().setFinal(false);
 		this.automata.lastElement().addTransiciones("ε", af.automata.firstElement().getEstado());

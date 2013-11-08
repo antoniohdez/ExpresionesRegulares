@@ -82,7 +82,7 @@ public class PostFix {
 					this.stack.push(symbol);
 				}	
 			}
-			else if(Character.isAlphabetic(symbol) || symbol == '\n' || symbol == ' ' || Character.isDigit(symbol) || symbol == '.' || symbol == '+'|| symbol == '*'){ 
+			else if(Character.isLetter(symbol) || symbol == '\n' || symbol == ' ' || Character.isDigit(symbol) || symbol == '.' || symbol == '+'|| symbol == '*'){ 
 				postFix = postFix + symbol;
 			}
 		}
