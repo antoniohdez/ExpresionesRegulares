@@ -6,12 +6,28 @@ import java.util.Vector;
 public class AFN_E {
 	private State actual;
 	private Vector<State> automata;
-	
+
 	public AFN_E(){
 		this.actual = null;
 		this.automata = new Vector<State>();
 	}
-	
+	public int buscarEstado(String nombre){
+		for(State estado:automata){
+			if(estado.getEstado().equals(nombre)){
+				return automata.indexOf(estado);
+			}
+		}
+		return -1;
+	}
+	public boolean buscarFinal(String nombre){
+		boolean esFinal = false;
+		for(State estado:automata){
+			if(estado.getEstado().equals(nombre)){
+				esFinal =  estado.getFinal();
+			}
+		}
+		return esFinal;
+	}
 	public void addState(String nombre, Hashtable<String, Vector<String>> transiciones, boolean esFinal){
 		if(this.automata.size() == 0){
 			//this.automata = new Vector<State>();
@@ -25,30 +41,28 @@ public class AFN_E {
 	public void addState(State estado){
 		this.automata.add(estado);
 	}
-	
+
 	public boolean runAFN(String cadena){
 		System.out.println(cadena);
 		//Vector<String> estado = new Vector<String>();
 		String estado;
 		for(int i = 0; i < cadena.length(); i++){
 			//Se obtiene el nombre del siguiente estado de acuerdo al caracter de entrada
+
 			estado =  this.transicionAString(this.actual.getTransiciones().get(String.valueOf(cadena.charAt(i))));
 			//System.out.print("Caracter "+String.valueOf(cadena.charAt(i))+" va a "+estado);
 			if(estado == null) return false;
-			for(int j = 0; j < automata.size(); j++){
-				if(estado.compareTo(automata.elementAt(j).getEstado()) == 0){
-					//System.out.println("Estado comparado a "+automata.elementAt(j).getEstado());
-					this.actual = this.automata.elementAt(j);
-					if(i+1<cadena.length()){
-						if(runAFN(cadena.substring(i+1)))
-							return true;
-						else{
-							j = 0;
-							i++;
-							this.actual = this.automata.elementAt(j);
+			else {
+				for(int j = 0; j < automata.size(); j++){
+					if(estado.compareTo(automata.elementAt(j).getEstado()) == 0){
+						//System.out.println("Estado comparado a "+automata.elementAt(j).getEstado());
+						this.actual = this.automata.elementAt(j);
+						if(i+1<cadena.length()){
+							if(runAFN(cadena.substring(i+1)))
+								return true;
 						}
+
 					}
-					
 				}
 			}
 		}
@@ -72,10 +86,10 @@ public class AFN_E {
 			this.automata.add(af.automata.firstElement());
 			af.automata.remove(0);
 		}
-		
-		this.imprimeAutomata();
+
+		//this.imprimeAutomata();
 	}
-	
+
 	public void union(AFN_E af){
 		int n;
 		//Se agrega un estado al inicio y sus transiciones
@@ -86,24 +100,24 @@ public class AFN_E {
 		Hashtable<String, Vector<String>> htmp = new Hashtable<String, Vector<String>>();
 		htmp.put("ε", estados);
 		this.automata.add(0, new State(String.valueOf(n+1), htmp, false));
-		
+
 		//Se agrega una transicion de los antiguos finales al nuevo final
 		this.automata.lastElement().setFinal(false);
 		this.automata.lastElement().addTransiciones("ε", String.valueOf(n+2));
 		af.automata.lastElement().setFinal(false);
 		af.automata.lastElement().addTransiciones("ε", String.valueOf(n+2));
-		
+
 		//Copia los elementos de af a el automata de la clase
 		while(af.automata.size() > 0){
 			this.automata.add(af.automata.firstElement());
 			af.automata.remove(0);
 		}
-		
+
 		//Se agrega un nuevo estado final
 		this.automata.add(new State(String.valueOf(n+2), new Hashtable<String, Vector<String>>(), true));
-		
+
 	}
-	
+
 	public void estrella(){
 		int n;
 		n = Integer.parseInt(this.automata.lastElement().getEstado());
@@ -122,18 +136,18 @@ public class AFN_E {
 		//Se agrega la transicion del nuevo estao inicial al nueo final
 		this.automata.firstElement().addTransiciones("ε", this.automata.lastElement().getEstado());
 	}
-	
+
 	public void positiva(){
 		int n;
 		n = Integer.parseInt(this.automata.lastElement().getEstado());
 		this.automata.lastElement().addTransiciones("ε", this.automata.firstElement().getEstado());
 		this.automata.lastElement().addTransiciones("ε", String.valueOf(n+1));
 		this.automata.lastElement().setFinal(false);
-		
+
 		this.automata.add(new State(String.valueOf(n+1), new Hashtable<String, Vector<String>>(), true));
-		
+
 	}
-	
+
 	public void imprimeAutomata(){
 		for(int i = 0; i < this.automata.size(); i++){
 			System.out.print(this.automata.elementAt(i).getEstado() + " ");
@@ -145,10 +159,10 @@ public class AFN_E {
 			}
 			if(this.automata.elementAt(i).getFinal()) System.out.println("\tFinal");
 			System.out.println();
-			
+
 		}
 	}
-	
+
 	public Vector<State> getAutomata(){
 		return this.automata;
 	}
@@ -157,7 +171,7 @@ public class AFN_E {
 		AFN_E a = new AFN_E();
 		//System.out.println(a.runAFN("aabaab"));
 		a.imprimeAutomata();
-		
+
 	}
 
 }
@@ -167,17 +181,17 @@ class State{
 	private Hashtable<String,Vector<String>> transiciones;
 	private String estado;
 	private boolean esFinal;
-	
+
 	public State(String estado, Hashtable<String,Vector<String>> transiciones, boolean esFinal){
 		this.estado = estado;
 		this.transiciones = transiciones;
 		this.esFinal = esFinal;
 	}
-	
+
 	public Hashtable<String,Vector<String>> getTransiciones(){
 		return transiciones;
 	}
-	
+
 	public void addTransiciones(String t, String e){
 		if(this.transiciones.get(t) == null){
 			Vector<String> tmp = new Vector<String>();
@@ -188,21 +202,21 @@ class State{
 			this.transiciones.get(t).add(e);
 		}
 	}
-	
+
 	public String getEstado(){
 		return this.estado;
 	}
-	
+
 	public void setEstado(String estado){
 		this.estado = estado;
 	}
-	
+
 	public boolean getFinal(){
 		return this.esFinal;
 	}
-	
+
 	public void setFinal(boolean esFinal){
 		this.esFinal = esFinal;
 	}
-	
+
 }

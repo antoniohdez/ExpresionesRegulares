@@ -7,7 +7,7 @@ import java.util.Vector;
 public class ERaAFN {
 
 	private final String[] operadores = {"*", "+", "#", ","};
-	private final String[] alfabeto = {" ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "á", "é", "í", "ó", "ú", "Á", "É", "Í", "Ó", "Ú", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}    ;
+	private final String[] alfabeto = {"á","é","í","ó","ú","Á","É","Í","Ó","Ú","1","2","3","4","5","6","7","8","9","0"," ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
 	private AFN_E automata;
 	private int numEstados = 0;
 	
@@ -16,9 +16,10 @@ public class ERaAFN {
 		AFN_E tmp = new AFN_E();
 		Stack<AFN_E> a = new Stack<AFN_E>();
 		this.automata = crearAutomata(String.valueOf(ER.charAt(0)));
-		a.add(this.automata);
+		a.add(automata);
 		
 		for(int i = 1; i < ER.length(); i++){
+			
 			if(ER.charAt(i) == '*'){
 				a.peek().estrella();
 				//this.automata.estrella();
@@ -81,6 +82,26 @@ public class ERaAFN {
 		af.addState(String.valueOf(this.numEstados++), new Hashtable<String, Vector<String>>(), true);
 		return af;
 	}
+	public static void sort (Vector <String> array){
+		String pilot;
+		boolean sorted;
+		int length=array.size()-1;
+		do{
+			sorted=false;
+			for (int i=0;i<length;i++){
+				if (Integer.parseInt(array.get(i))>Integer.parseInt(array.get(i+1))){
+					pilot=array.get(i);
+					array.setElementAt(array.get(i+1), i);
+					array.setElementAt(pilot, i+1);
+					sorted=true;
+					
+				}
+			}
+			length--;
+		}while(sorted);
+
+		
+	}
 	
 	public AFN_E crearAutomataE(){
 		AFN_E af = new AFN_E();
@@ -115,42 +136,48 @@ public class ERaAFN {
 		Hashtable<String, Vector<String>> clausuras = new Hashtable<String, Vector<String>>();
 		Vector<State> estados = this.automata.getAutomata();
 		Vector<String> clausura;
-		
+		this.automata.imprimeAutomata();
 		for(int i = 0; i <= this.numEstados; i++){
 			clausura = new Vector<String>();
 			this.getClausura(estados, clausura, String.valueOf(i), false);//El false es para la llamada recursiva, si se coloca un true entonces no se agrega a si mismo a la clausura
 			clausuras.put(String.valueOf(i), clausura);
-			//System.out.println("Clausura de: " + String.valueOf(i) + " " +clausura);
+			System.out.println("Clausura de: " + String.valueOf(i) + " " +clausura);
 		}
-		Vector<String> actual = clausuras.get(String.valueOf(estados.get(0).getEstado())); //Obtiene el estado inicial
-		Collections.sort(actual);
-		AFN_E afn = new AFN_E(); //Nuevo automata a regresar
-		boolean hasMoreStates = true; //Bandera para la creacion de nuevos estados
-		Hashtable<String,Vector<String>> transClausurasHash=null;
 		
-		Vector<Vector<String>> estadosNuevoAutomata = new Vector<Vector<String>>(); //Vector bidimensional que contiene los nuevos estados del nuevo automata
+		Vector<String> inicial = clausuras.get(String.valueOf(estados.get(0).getEstado())); //Obtiene el estado inicial
+		sort(inicial);
+		String actual = this.automata.transicionAString(inicial);
+		AFN_E afn = new AFN_E(); //Nuevo automata a regresar
+		Hashtable<String,Vector<String>> transClausurasHash=null;
+		this.automata.imprimeAutomata();
+		Vector<String> estadosNuevoAutomata = new Vector<String>(); //Vector bidimensional que contiene los nuevos estados del nuevo automata
 		estadosNuevoAutomata.add(actual);
 		int contadorNuevosEstados=0;
 		int contadorEstadoActual=0;
 		while(contadorEstadoActual<=contadorNuevosEstados){
+			boolean esFinal=false;
 			String newState = ""; //Crear nombre de nuevo estado
-			actual=new Vector<String>();
+			actual="";
 			actual = estadosNuevoAutomata.get(contadorEstadoActual);
+			
+			String [] estadosActual = actual.split(",");
 			transClausurasHash = new Hashtable<String,Vector<String>>(); //HashTable para el nuevo estado
-			int size = actual.size();
-			for(int a=0;a<size;a++){
-				String estado=actual.get(a);
+			for(int a=0;a<estadosActual.length;a++){
+				String estado=estadosActual[a];
 				newState += estado + ","; //Concatena nombre del nuevo estado
-				Hashtable<String,Vector<String>> trans = estados.get(Integer.parseInt(estado)).getTransiciones();//Obtiene las transiciones del estado revisado
-				boolean esFinal=false;
+				int index = automata.buscarEstado(estado);
+				Hashtable<String,Vector<String>> trans = estados.get(index).getTransiciones();//Obtiene las transiciones del estado revisado
+				esFinal=automata.buscarFinal(estado);
 				//System.out.println(newState);
 				Enumeration<String> key = trans.keys(); //Obtiene los caracteres a los que va el estado revisado
-				
+				//System.out.println("Estado "+estado + " Tiene transicion con los caracteres: "+ trans.keySet());
 				while(key.hasMoreElements()){ //Recorre todos los caracteres a los que va el estado revisado
 					String caracter = key.nextElement();
+					//System.out.println("Estado: "+estado+" Caracter actual: "+caracter + " Va a estados: "+edos);
+					Vector<String> newTransitions=new Vector<String>(); //Nuevas transiciones que tendra el nuevo estado
 					if(caracter!="ε"){ //Si el caracter actual es diferente de epsilon, procede a obtener sus clausuras de epsilon
 						Vector<String> transClausuras = trans.get(caracter); //Obtiene las transiciones de ese caracter
-						Vector<String> newTransitions=new Vector<String>(); //Nuevas transiciones que tendra el nuevo estado
+						
 						for (int i=0;i<transClausuras.size();i++){
 							Vector<String> sacaClausuras = clausuras.get(transClausuras.get(i)); //Obtiene la clausura del estado
 							//String estadoClausuras ="";
@@ -162,47 +189,54 @@ public class ERaAFN {
 						}
 						this.eliminaRepetidos(newTransitions);
 						
-						Collections.sort(newTransitions);
+						sort(newTransitions);
 						Vector<String> chequeoCaracterExistente = transClausurasHash.get(caracter);
 						if(chequeoCaracterExistente!=null){
-							System.out.println("Hay un caracter que ya existe en la tablaHash para "+caracter);
+							//System.out.println("Hay un caracter que ya existe en la tablaHash "+caracter);
 							for(String estadoAgregarCaracter : newTransitions){
 								if(!chequeoCaracterExistente.contains(estadoAgregarCaracter)){
 									chequeoCaracterExistente.add(estadoAgregarCaracter);
+									//System.out.println(chequeoCaracterExistente+" No contiene "+estadoAgregarCaracter);
 								}
 							}
+							
 							newTransitions = transClausurasHash.get(caracter);
-							System.out.println("Caracter : "+caracter+" Nueva transicion: "+newTransitions);
+							sort(newTransitions);
+							//System.out.println("Caracter : "+caracter+" Nueva transicion: "+newTransitions);
 						}
 						else {
 							transClausurasHash.put(caracter, newTransitions);  //agrega las nuevas transiciones del caracter a la tabla hash que obtendra el nuevo estado
 						}
 						boolean agregable = true;
-						for(int k = 0; k<estadosNuevoAutomata.size();k++){
-							if(estadosNuevoAutomata.get(k).containsAll(newTransitions) && newTransitions.size()==estadosNuevoAutomata.get(k).size()){
+						
+						for (String e : estadosNuevoAutomata){
+							if(e.equals(this.automata.transicionAString(newTransitions))){
 								agregable = false;
 							}
 						}
 						if(agregable){
-							estadosNuevoAutomata.add(newTransitions);
+							sort(newTransitions);
+							estadosNuevoAutomata.add(this.automata.transicionAString(newTransitions));
+							//System.out.println(newTransitions + " Fue agregado");
 							contadorNuevosEstados++;
 						}
-						
+						newTransitions=new Vector<String>();
 					}
 				}
 				
 				
 			}
 			newState=newState.substring(0, newState.length()-1);
-			afn.addState(newState, transClausurasHash, false);
+			afn.addState(newState, transClausurasHash, esFinal);
 			contadorEstadoActual++;		
+			/*System.out.println("Imprimir automata");
+			afn.imprimeAutomata();
+			System.out.println("Imprimir estados so far "+estadosNuevoAutomata);*/
 			
 		}
-		State lol = afn.getAutomata().remove(afn.getAutomata().size()-1);
-		lol.setFinal(true);
-		afn.addState(lol);
 		afn.imprimeAutomata();
-		System.out.println(afn.runAFN("o"));
+		System.out.println();
+		System.out.println(afn.runAFN("010101010101011"));
 		return afn;
 	}
 	
@@ -245,10 +279,12 @@ public class ERaAFN {
 				if(tmp == null) break;
 				//Sacar el estado a donde manda la transicion e
 				
-				for(int j = 0; j < tmp.size(); j++){
-					clausura.add(tmp.elementAt(j));
-					this.getClausura(estados, clausura, tmp.elementAt(j), true);
-				}
+for(int j = 0; j < tmp.size(); j++){
+	if(!isInVector(clausura, estado)){
+		clausura.add(tmp.elementAt(j));
+		this.getClausura(estados, clausura, tmp.elementAt(j), true);
+	}
+}
 				//estados.get(i).getTransiciones().get(estado);
 				break;
 			}
@@ -257,9 +293,18 @@ public class ERaAFN {
 		
 	}
 	
+boolean isInVector(Vector<String> clausura, String estado){
+	for(String e : clausura){
+		if(e.compareTo(estado) == 0){
+			return true;
+		}
+	}
+	return false;
+}
 	
 	public static void main(String[] args) {
-		PostFix convertir = new PostFix("(éi)*(tu,yo,mi)(óu)*");
+		//Epsilon de verdad: ε
+		PostFix convertir = new PostFix("(01)*(ε,0)+(10)*(ε,1)");
 		System.out.println(convertir.getResult());
 		String exp = convertir.getResult();
 		ERaAFN a = new ERaAFN(exp);

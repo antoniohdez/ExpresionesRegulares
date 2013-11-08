@@ -58,7 +58,17 @@ public class PostFix {
 		expression = expression + exp.charAt(exp.length() - 1);
 		System.out.println(expression);
 		
-		
+		for(int i=0;i<expression.length();i++){
+			if(expression.charAt(i)=='ε' && expression.charAt(i-1)=='#'){
+				String fin ="";
+				if(expression.substring(i+1)!=null){
+					fin = expression.substring(i+1);
+				}
+				expression = expression.substring(0,i-1)+fin;
+						
+			}
+		}
+		System.out.println(expression);
 		String postFix = "";
 		char symbol;
 		
