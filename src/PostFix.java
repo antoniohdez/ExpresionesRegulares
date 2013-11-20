@@ -56,7 +56,7 @@ public class PostFix {
 			
 		}
 		expression = expression + exp.charAt(exp.length() - 1);
-		System.out.println(expression);
+		//System.out.println(expression);
 		
 		for(int i=0;i<expression.length();i++){
 			if(expression.charAt(i)=='ε' && expression.charAt(i-1)=='#'){
@@ -68,7 +68,7 @@ public class PostFix {
 						
 			}
 		}
-		System.out.println(expression);
+		//System.out.println(expression);
 		String postFix = "";
 		char symbol;
 		
@@ -106,11 +106,5 @@ public class PostFix {
 		return postFix;
 	}
 	
-	public static void main(String[] args) {
-		
-		PostFix convertir = new PostFix("(padre,ε)(.)+www(.)+com");
-		System.out.println(convertir.getResult());
-
-	}
 
 }

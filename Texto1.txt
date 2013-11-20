@@ -1,0 +1,22 @@
+Welcome to my program this is an intuitive tool for learning writing and testing Regular Expressions Key features include
+
+
+
+Real time results shows results as you type 
+
+Code hinting roll over your expressions to see info on specific elements 
+
+Detailed results roll over a match to see details view group info below 
+
+Built in regex guide double click entries to insert them into your expressionn 
+
+Online and desktop or download the desktop version for Mac Windows or Linux 
+
+Save your expressions My saved expresssions are saved locally 
+
+Search Community expressiones and add your countersink
+ and spaces
+Create Share Links to send your expressions to coworkers or link to them on Twitter or your blog 
+
+
+Built by me with Flex 3 and Spelling Plus Library for text highlighting 

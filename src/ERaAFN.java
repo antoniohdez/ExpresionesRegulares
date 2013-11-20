@@ -1,3 +1,10 @@
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.CharBuffer;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -7,18 +14,20 @@ import java.util.Vector;
 public class ERaAFN {
 
 	private final String[] operadores = {"*", "+", "#", ","};
-	private final String[] alfabeto = {"á","é","í","ó","ú","Á","É","Í","Ó","Ú","1","2","3","4","5","6","7","8","9","0"," ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-	private AFN_E automata;
+	private final String[] alfabeto = {"á","é","í","ó","ú",
+									   "1","2","3","4","5","6","7","8","9","0",
+									   " ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+	private AFN_E automata, afn;
 	private int numEstados = 0;
 	
 	public ERaAFN(String ER){
 		automata = new AFN_E();
 		AFN_E tmp = new AFN_E();
 		Stack<AFN_E> a = new Stack<AFN_E>();
-		this.automata = crearAutomata(String.valueOf(ER.charAt(0)));
-		a.add(automata);
+		//this.automata = crearAutomata(String.valueOf(ER.charAt(0)));
+		//a.add(automata);
 		
-		for(int i = 1; i < ER.length(); i++){
+		for(int i = 0; i < ER.length(); i++){
 			
 			if(ER.charAt(i) == '*'){
 				a.peek().estrella();
@@ -45,21 +54,35 @@ public class ERaAFN {
 				this.numEstados += 2;
 			}
 			else if(ER.charAt(i) == '.'){//Caso especial de caracteres de entreda (varios que pueden ser aleatorios)
+				if(i == 0){
+					this.automata = crearAutomataPunto();
+					a.push(this.automata);
+					continue;
+				}
 				a.push(crearAutomataPunto());
 				//tmp = crearAutomataPunto();
+				
 				this.numEstados++;
+				/*
 				if(ER.charAt(i+1) == '+'){
+				
 					a.peek().positiva();
 					//tmp.positiva();
 					i+=1;
 					
 				}
+				*/
 			}
 			else if(ER.charAt(i) == 'ε'){
 				a.push(crearAutomata(String.valueOf(ER.charAt(i))));
 				//tmp = crearAutomataE();
 			}
 			else{
+				if(i == 0){
+					this.automata = crearAutomata(String.valueOf(ER.charAt(0)));
+					a.push(this.automata);
+					continue;
+				}
 				a.push(crearAutomata(String.valueOf(ER.charAt(i))));
 				//tmp = crearAutomata(String.valueOf(ER.charAt(i)));
 			}
@@ -141,7 +164,7 @@ public class ERaAFN {
 			clausura = new Vector<String>();
 			this.getClausura(estados, clausura, String.valueOf(i), false);//El false es para la llamada recursiva, si se coloca un true entonces no se agrega a si mismo a la clausura
 			clausuras.put(String.valueOf(i), clausura);
-			System.out.println("Clausura de: " + String.valueOf(i) + " " +clausura);
+			//.out.println("Clausura de: " + String.valueOf(i) + " " +clausura);
 		}
 		
 		Vector<String> inicial = clausuras.get(String.valueOf(estados.get(0).getEstado())); //Obtiene el estado inicial
@@ -235,8 +258,7 @@ public class ERaAFN {
 			
 		}
 		afn.imprimeAutomata();
-		System.out.println();
-		System.out.println(afn.runAFN("010101010101011"));
+		this.afn=afn;
 		return afn;
 	}
 	
@@ -279,12 +301,10 @@ public class ERaAFN {
 				if(tmp == null) break;
 				//Sacar el estado a donde manda la transicion e
 				
-for(int j = 0; j < tmp.size(); j++){
-	if(!isInVector(clausura, estado)){
-		clausura.add(tmp.elementAt(j));
-		this.getClausura(estados, clausura, tmp.elementAt(j), true);
-	}
-}
+				for(int j = 0; j < tmp.size(); j++){
+					clausura.add(tmp.elementAt(j));
+					this.getClausura(estados, clausura, tmp.elementAt(j), true);
+				}
 				//estados.get(i).getTransiciones().get(estado);
 				break;
 			}
@@ -293,26 +313,27 @@ for(int j = 0; j < tmp.size(); j++){
 		
 	}
 	
-boolean isInVector(Vector<String> clausura, String estado){
-	for(String e : clausura){
-		if(e.compareTo(estado) == 0){
-			return true;
+	public Vector<String> lector (String filepath) throws IOException{
+		BufferedReader bf = new BufferedReader(
+				new InputStreamReader(new FileInputStream(filepath), "UTF-8"));
+		String line="",subline,ln;
+		CharBuffer cbuf = null;
+		//this.afn.imprimeAutomata();
+		Vector<String> sublines = new Vector<String>();
+		while((ln=bf.readLine())!=null){
+			line+=ln+"\n";
 		}
+		for(int i=0;i<line.length();i++){
+			for(int j=i;j<line.length()+1;j++){
+				subline=line.substring(i,j);
+				if(this.afn.runAFN(subline)){
+					sublines.add(subline);
+				}
+			}
+		}
+		return sublines;
 	}
-	return false;
-}
 	
-	public static void main(String[] args) {
-		//Epsilon de verdad: ε
-		PostFix convertir = new PostFix("(01)*(ε,0)+(10)*(ε,1)");
-		System.out.println(convertir.getResult());
-		String exp = convertir.getResult();
-		ERaAFN a = new ERaAFN(exp);
-		//ERenAFN a = new ERenAFN("ab#.+#");
-		//a.crearAutomataPorPalabra("pa#d#r#e#ε,.+#w#w#w#.+#c#o#m#");
-		
-		
-
-	}
+	
 
 }

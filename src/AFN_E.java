@@ -19,6 +19,9 @@ public class AFN_E {
 		}
 		return -1;
 	}
+	public void restartActual(){
+		this.actual=this.automata.elementAt(0);
+	}
 	public boolean buscarFinal(String nombre){
 		boolean esFinal = false;
 		for(State estado:automata){
@@ -43,30 +46,19 @@ public class AFN_E {
 	}
 
 	public boolean runAFN(String cadena){
-		System.out.println(cadena);
-		//Vector<String> estado = new Vector<String>();
-		String estado;
-		for(int i = 0; i < cadena.length(); i++){
-			//Se obtiene el nombre del siguiente estado de acuerdo al caracter de entrada
-
-			estado =  this.transicionAString(this.actual.getTransiciones().get(String.valueOf(cadena.charAt(i))));
-			//System.out.print("Caracter "+String.valueOf(cadena.charAt(i))+" va a "+estado);
-			if(estado == null) return false;
-			else {
-				for(int j = 0; j < automata.size(); j++){
-					if(estado.compareTo(automata.elementAt(j).getEstado()) == 0){
-						//System.out.println("Estado comparado a "+automata.elementAt(j).getEstado());
-						this.actual = this.automata.elementAt(j);
-						if(i+1<cadena.length()){
-							if(runAFN(cadena.substring(i+1)))
-								return true;
-						}
-
-					}
-				}
-			}
+		return runAFN(cadena,0,0);
+	}
+	public boolean runAFN(String input, int index, int state ){
+		if(index==input.length()){
+			return this.automata.get(state).getFinal();
 		}
-		return actual.getFinal();
+		else {
+			String estado = this.transicionAString(this.automata.get(state).getTransiciones().get(String.valueOf(input.charAt(index))));;
+			if(estado==null) return false;
+			//System.out.println(estado +" posicion "+this.buscarEstado(estado));
+			return runAFN(input,index+1,this.buscarEstado(estado));	
+			
+		}
 	}
 	public String transicionAString(Vector<String> transicion){
 		String transicionString="";
@@ -167,12 +159,6 @@ public class AFN_E {
 		return this.automata;
 	}
 
-	public static void main(String[] args) {
-		AFN_E a = new AFN_E();
-		//System.out.println(a.runAFN("aabaab"));
-		a.imprimeAutomata();
-
-	}
 
 }
 
